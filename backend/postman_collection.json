@@ -1,0 +1,238 @@
+{
+  "info": {
+    "name": "Agri Logistics & User Management API",
+    "_postman_id": "b188c03e-90f1-4df2-a9b8-agrilog2026",
+    "description": "Full Postman API collection for testing User Management, Logistics & Dispatch, Real-Time Tracking, Driver Performance, Proof of Delivery, and 1-Page Agri Food Catalog.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@agrilog.com\",\n  \"password\": \"pass123\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Register New User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jonathan Greenfield\",\n  \"email\": \"jonathan@greenharvest.com\",\n  \"password\": \"pass123\",\n  \"role\": \"Buyer\",\n  \"phone\": \"+1 (555) 678-9900\",\n  \"location\": \"Highland Agro Market\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/auth/register", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Get Current Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwt_token}}" }],
+            "url": { "raw": "http://localhost:5000/api/auth/me", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Products & 1-Page Agri Store",
+      "item": [
+        {
+          "name": "Get All Food Products (with 1kg prices)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/products", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "products"] }
+          }
+        },
+        {
+          "name": "Filter by Category (Fresh Vegetables)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/products?category=Fresh%20Vegetables", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "products"], "query": [{ "key": "category", "value": "Fresh Vegetables" }] }
+          }
+        },
+        {
+          "name": "Direct Order From Store",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productName\": \"Crisp Vine-Ripened Tomatoes\",\n  \"category\": \"Fresh Vegetables\",\n  \"quantityKg\": 150,\n  \"pricePerKg\": 2.80,\n  \"buyerName\": \"Metro Fresh Supermarket\",\n  \"buyerPhone\": \"+1 (555) 987-6543\",\n  \"destination\": \"Terminal Dock 4, Bay Street\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/products/order", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "products", "order"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. User & Role Management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/users", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Filter Users by Role (Admin, Buyer, Seller, Driver)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/users?role=Driver", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "users"], "query": [{ "key": "role", "value": "Driver" }] }
+          }
+        },
+        {
+          "name": "Update User Role or Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Admin\",\n  \"status\": \"Active\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/users/usr_buyer_01", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "users", "usr_buyer_01"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Logistics & Shipments",
+      "item": [
+        {
+          "name": "Get All Shipments",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/shipments", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "shipments"] }
+          }
+        },
+        {
+          "name": "Track Shipment by Tracking #",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/shipments/track/AGRI-TRK-8821", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "shipments", "track", "AGRI-TRK-8821"] }
+          }
+        },
+        {
+          "name": "Create New Agricultural Shipment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productName\": \"Organic Golden Sweet Corn\",\n  \"category\": \"Grains & Cereals\",\n  \"weightKg\": 500,\n  \"pricePerKg\": 2.20,\n  \"origin\": \"Plains Harvest Farm\",\n  \"destination\": \"Central Milling Co., Sector 8\",\n  \"buyerName\": \"Rachel Adams\",\n  \"buyerPhone\": \"+1 (555) 554-9988\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/shipments", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "shipments"] }
+          }
+        },
+        {
+          "name": "Assign Driver to Shipment (Manual)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driverId\": \"drv_01\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/shipments/shp_8822/assign-driver", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "shipments", "shp_8822", "assign-driver"] }
+          }
+        },
+        {
+          "name": "Auto-Dispatch Optimal Driver (Algorithm)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "http://localhost:5000/api/shipments/shp_8822/auto-dispatch", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "shipments", "shp_8822", "auto-dispatch"] }
+          }
+        },
+        {
+          "name": "Update Shipment Status",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In-Transit\",\n  \"location\": \"Highway 101 Northbound Gate 6\",\n  \"note\": \"Passed cold-chain temperature inspection.\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/shipments/shp_8821/update-status", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "shipments", "shp_8821", "update-status"] }
+          }
+        },
+        {
+          "name": "Proof of Delivery Confirmation (OTP + Signature)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otp\": \"4829\",\n  \"recipientName\": \"Sarah Jenkins\",\n  \"signatureData\": \"data:image/svg+xml;utf8,<svg>SampleSignature</svg>\",\n  \"confirmedBy\": \"Carlos Mendoza\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/shipments/shp_8821/proof-of-delivery", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "shipments", "shp_8821", "proof-of-delivery"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Drivers & Fleet",
+      "item": [
+        {
+          "name": "Get Drivers List",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/drivers", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "drivers"] }
+          }
+        },
+        {
+          "name": "Register New Driver",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fernando Morales\",\n  \"phone\": \"+1 (555) 789-4321\",\n  \"vehicleNumber\": \"AGRI-TRK-771\",\n  \"vehicleType\": \"Agri Heavy Truck\",\n  \"capacityKg\": 6000,\n  \"currentLocation\": \"West Valley Warehouse\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/drivers", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "drivers"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Report Generator & Analytics",
+      "item": [
+        {
+          "name": "Get Delivery Report Summary",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/reports/summary", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "reports", "summary"] }
+          }
+        },
+        {
+          "name": "Export Deliveries as CSV",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/reports/export-csv", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "reports", "export-csv"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Global Multi-Entity Search",
+      "item": [
+        {
+          "name": "Search Users, Drivers, Orders, Products",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://localhost:5000/api/search?q=tomatoes", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "search"], "query": [{ "key": "q", "value": "tomatoes" }] }
+          }
+        }
+      ]
+    }
+  ]
+}
