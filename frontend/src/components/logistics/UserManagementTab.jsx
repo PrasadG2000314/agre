@@ -17,7 +17,7 @@ import { api } from '../../services/api';
 
 const ROLES = ['All', 'Admin', 'Driver', 'Seller', 'Buyer'];
 
-export default function UserManagementTab({ users, onReloadUsers }) {
+export default function UserManagementTab({ users, isAdmin, onReloadUsers }) {
   const [roleFilter, setRoleFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -130,14 +130,21 @@ export default function UserManagementTab({ users, onReloadUsers }) {
             </p>
           </div>
 
-          <button 
-            className="btn-primary" 
-            onClick={() => setShowAddModal(true)}
-            id="btn-add-new-user"
-          >
-            <UserPlus size={16} />
-            <span>Add New User / Partner</span>
-          </button>
+          {isAdmin ? (
+            <button 
+              className="btn-primary" 
+              onClick={() => setShowAddModal(true)}
+              id="btn-add-new-user"
+            >
+              <UserPlus size={16} />
+              <span>Add New User / Partner</span>
+            </button>
+          ) : (
+            <div style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#f8fafc', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <span>🔒</span>
+              <span>User provisioning & edits restricted to Admin</span>
+            </div>
+          )}
         </div>
 
         {/* Filters Bar */}
@@ -242,25 +249,31 @@ export default function UserManagementTab({ users, onReloadUsers }) {
                     </td>
 
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.45rem' }}>
-                        <button 
-                          className="btn-secondary" 
-                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.78rem' }}
-                          onClick={() => handleOpenEdit(u)}
-                          title="Edit User Role & Permissions"
-                        >
-                          <Edit3 size={14} />
-                          <span>Edit</span>
-                        </button>
-                        <button 
-                          className="btn-secondary" 
-                          style={{ padding: '0.4rem', color: '#ef4444' }}
-                          onClick={() => handleDeleteUser(u.id || u._id)}
-                          title="Delete User"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                      {isAdmin ? (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.45rem' }}>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ padding: '0.4rem 0.75rem', fontSize: '0.78rem' }}
+                            onClick={() => handleOpenEdit(u)}
+                            title="Edit User Role & Permissions"
+                          >
+                            <Edit3 size={14} />
+                            <span>Edit</span>
+                          </button>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ padding: '0.4rem', color: '#ef4444' }}
+                            onClick={() => handleDeleteUser(u.id || u._id)}
+                            title="Delete User"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: '600' }}>
+                          View Only
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))

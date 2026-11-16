@@ -23,6 +23,7 @@ import LiveTrackingModal from './logistics/LiveTrackingModal';
 import ProofOfDeliveryModal from './logistics/ProofOfDeliveryModal';
 
 export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlobalSearch }) {
+  const isAdmin = Boolean(user && user.role?.toLowerCase() === 'admin');
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'shipments' | 'fleet' | 'reports'
   const [users, setUsers] = useState([]);
   const [shipments, setShipments] = useState([]);
@@ -106,10 +107,22 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
       {/* Portal Top Bar */}
       <div className="portal-topbar">
         <div className="portal-title-block">
-          <h2>
-            <Truck size={24} color="#059669" />
-            <span>User & Logistics Management Portal</span>
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Truck size={24} color="#059669" />
+              <span>User & Logistics Management Portal</span>
+            </h2>
+            {isAdmin ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: '#dcfce7', color: '#166534', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.78rem', fontWeight: '800', border: '1px solid #86efac' }}>
+                <ShieldCheck size={14} />
+                <span>Admin Operations (Full Control)</span>
+              </span>
+            ) : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: '#fef3c7', color: '#92400e', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.78rem', fontWeight: '800', border: '1px solid #fde68a' }}>
+                <span>🔒 View-Only Mode ({user?.role || 'User'})</span>
+              </span>
+            )}
+          </div>
           <p>
             Central dispatch control, user permissions, cold-chain shipment tracking, and proof of delivery
           </p>
@@ -181,6 +194,21 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
         </div>
       </div>
 
+      {/* Read-Only Notice for Non-Admins */}
+      {!isAdmin && (
+        <div style={{ background: '#fffbeb', borderBottom: '1px solid #fef3c7', padding: '0.65rem 1.5rem', color: '#92400e', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1rem' }}>🔒</span>
+            <span>
+              <strong>View-Only Access:</strong> Regular users can monitor shipments, routes, fleet and reports. Only <strong>Admin</strong> accounts can approve dispatches, assign drivers, or modify statuses.
+            </span>
+          </div>
+          <span style={{ fontSize: '0.78rem', color: '#b45309', background: '#fef3c7', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+            Active Account: {user ? `${user.name} (${user.role})` : 'Guest'}
+          </span>
+        </div>
+      )}
+
       {/* Auto Dispatch Notification Banner */}
       {dispatchAlert && (
         <div style={{ background: '#ecfdf5', borderBottom: '1px solid #a7f3d0', padding: '0.75rem 1.5rem', color: '#065f46', fontSize: '0.9rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -204,6 +232,7 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
                 kpis={kpis}
                 shipments={shipments}
                 drivers={drivers}
+                isAdmin={isAdmin}
                 onRunAutoDispatch={handleRunAutoDispatch}
                 onOpenCreateShipment={() => setActiveTab('shipments')}
                 onSelectShipment={(s) => setActiveTrackingShipment(s)}
@@ -213,6 +242,7 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
             {activeTab === 'users' && (
               <UserManagementTab 
                 users={users} 
+                isAdmin={isAdmin}
                 onReloadUsers={loadAllData} 
               />
             )}
@@ -221,6 +251,7 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
               <ShipmentManagementTab 
                 shipments={shipments}
                 drivers={drivers}
+                isAdmin={isAdmin}
                 onReloadShipments={loadAllData}
                 onOpenTracking={(s) => setActiveTrackingShipment(s)}
                 onOpenProofOfDelivery={(s) => setActivePoDShipment(s)}
@@ -231,6 +262,7 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
             {activeTab === 'fleet' && (
               <DriverFleetTab 
                 drivers={drivers} 
+                isAdmin={isAdmin}
                 onReloadDrivers={loadAllData} 
               />
             )}
@@ -246,6 +278,7 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
       {activeTrackingShipment && (
         <LiveTrackingModal 
           shipment={activeTrackingShipment}
+          isAdmin={isAdmin}
           onClose={() => setActiveTrackingShipment(null)}
           onAdvanceStatus={handleAdvanceStatus}
           onOpenProofOfDelivery={(s) => {
@@ -259,6 +292,7 @@ export default function LogisticsDashboard({ user, onNavigateToStore, onOpenGlob
       {activePoDShipment && (
         <ProofOfDeliveryModal 
           shipment={activePoDShipment}
+          isAdmin={isAdmin}
           onClose={() => setActivePoDShipment(null)}
           onSuccess={handlePoDSuccess}
         />

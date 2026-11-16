@@ -212,7 +212,9 @@ export default function ReportGeneratorTab() {
                       </td>
                       <td>
                         <div style={{ fontWeight: '700', color: '#059669' }}>${s.totalPrice.toFixed(2)}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{s.weightKg} kg (${s.pricePerKg}/kg)</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                          {s.weightKg} kg • {s.distanceKm || 15} km (Fee: ${(s.deliveryFee !== undefined ? s.deliveryFee : 0).toFixed(2)})
+                        </div>
                       </td>
                       <td>
                         <div style={{ fontWeight: '600' }}>

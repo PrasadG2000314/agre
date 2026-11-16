@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, CheckCircle, PenTool, Key, Camera, User, AlertCircle, RefreshCw } from 'lucide-react';
 import { api } from '../../services/api';
 
-export default function ProofOfDeliveryModal({ shipment, onClose, onSuccess }) {
+export default function ProofOfDeliveryModal({ shipment, isAdmin = true, onClose, onSuccess }) {
   const [otp, setOtp] = useState('');
   const [recipientName, setRecipientName] = useState(shipment?.buyerName || '');
   const [photoUrl, setPhotoUrl] = useState('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=400&q=80');
@@ -63,6 +63,10 @@ export default function ProofOfDeliveryModal({ shipment, onClose, onSuccess }) {
 
   const handleSubmitPoD = async (e) => {
     e.preventDefault();
+    if (!isAdmin) {
+      setError('Access Denied: Only Admin accounts can approve Proof of Delivery.');
+      return;
+    }
     if (!otp.trim()) {
       setError('Please enter the delivery OTP code.');
       return;
@@ -234,10 +238,16 @@ export default function ProofOfDeliveryModal({ shipment, onClose, onSuccess }) {
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={loading}>
-              <CheckCircle size={16} />
-              <span>{loading ? 'Verifying...' : 'Verify OTP & Confirm Delivery'}</span>
-            </button>
+            {isAdmin ? (
+              <button type="submit" className="btn-primary" disabled={loading}>
+                <CheckCircle size={16} />
+                <span>{loading ? 'Verifying...' : 'Verify OTP & Confirm Delivery'}</span>
+              </button>
+            ) : (
+              <button type="button" className="btn-secondary" disabled style={{ opacity: 0.6, cursor: 'not-allowed' }}>
+                <span>🔒 Admin Approval Required</span>
+              </button>
+            )}
           </div>
         </form>
       </div>

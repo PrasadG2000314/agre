@@ -16,19 +16,21 @@ router.get('/', async (req, res) => {
 // Quick Order from the 1-page Agri Store (Creates a logistics shipment)
 router.post('/order', async (req, res) => {
   try {
-    const { productId, productName, category, quantityKg, pricePerKg, buyerName, buyerPhone, destination } = req.body;
+    const { productId, productName, category, quantityKg, pricePerKg, distanceKm, buyerName, buyerPhone, destination } = req.body;
     if (!productName || !quantityKg || !buyerName || !destination) {
       return res.status(400).json({ success: false, message: 'Please provide product name, quantity in kg, your name and delivery address' });
     }
 
     const weightKg = Number(quantityKg);
     const price = Number(pricePerKg) || 3.00;
+    const distance = Math.max(1, Number(distanceKm) || 15);
 
     const shipment = await createShipment({
       productName,
       category: category || 'Fresh Produce',
       weightKg,
       pricePerKg: price,
+      distanceKm: distance,
       origin: 'Green Harvest Farm Hub - Warehouse Gate 1',
       destination,
       buyerName,

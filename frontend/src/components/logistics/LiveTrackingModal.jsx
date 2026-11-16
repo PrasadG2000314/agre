@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Truck, MapPin, CheckCircle, Clock, ShieldCheck, Thermometer, User, Phone, AlertTriangle } from 'lucide-react';
 
-export default function LiveTrackingModal({ shipment, onClose, onAdvanceStatus, onOpenProofOfDelivery }) {
+export default function LiveTrackingModal({ shipment, isAdmin, onClose, onAdvanceStatus, onOpenProofOfDelivery }) {
   if (!shipment) return null;
 
   const getStatusClass = (st) => {
@@ -48,11 +48,11 @@ export default function LiveTrackingModal({ shipment, onClose, onAdvanceStatus, 
           )}
 
           {/* Cargo & Destination Quick Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
             <div>
               <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600' }}>Agricultural Cargo</div>
               <div style={{ fontWeight: '700', fontSize: '0.925rem', color: '#0f172a' }}>{shipment.productName}</div>
-              <div style={{ fontSize: '0.8rem', color: '#059669', fontWeight: '600' }}>{shipment.weightKg} kg ({shipment.category})</div>
+              <div style={{ fontSize: '0.8rem', color: '#059669', fontWeight: '600' }}>{shipment.weightKg} kg • {shipment.distanceKm || 15} km</div>
             </div>
 
             <div>
@@ -62,6 +62,16 @@ export default function LiveTrackingModal({ shipment, onClose, onAdvanceStatus, 
               </div>
               <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
                 {shipment.vehicleNumber ? `${shipment.vehicleNumber}` : 'Pending assignment'}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600' }}>Delivery & Pricing</div>
+              <div style={{ fontWeight: '700', fontSize: '0.925rem', color: '#059669' }}>
+                ${shipment.totalPrice.toFixed(2)}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                Fee: ${(shipment.deliveryFee || 0).toFixed(2)} (dist + wt)
               </div>
             </div>
 
@@ -112,23 +122,30 @@ export default function LiveTrackingModal({ shipment, onClose, onAdvanceStatus, 
           )}
         </div>
 
-        <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+        <div className="modal-footer" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            {shipment.status !== 'Delivered' && (
-              <button 
-                type="button" 
-                className="btn-primary" 
-                style={{ background: '#0284c7' }}
-                onClick={() => onOpenProofOfDelivery(shipment)}
-              >
-                <CheckCircle size={16} />
-                <span>Verify Proof of Delivery (PoD)</span>
-              </button>
+            {isAdmin ? (
+              shipment.status !== 'Delivered' && (
+                <button 
+                  type="button" 
+                  className="btn-primary" 
+                  style={{ background: '#0284c7' }}
+                  onClick={() => onOpenProofOfDelivery(shipment)}
+                >
+                  <CheckCircle size={16} />
+                  <span>Verify Proof of Delivery (PoD)</span>
+                </button>
+              )
+            ) : (
+              <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span>🔒</span>
+                <span>Read-only tracking mode (Status changes restricted to Admin)</span>
+              </span>
             )}
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {shipment.status === 'Pending' && (
+            {isAdmin && shipment.status === 'Pending' && (
               <button 
                 className="btn-primary"
                 onClick={() => onAdvanceStatus(shipment.id, 'Dispatched', 'Central Farm Hub Gate 1', 'Driver departed with cargo')}
@@ -136,7 +153,7 @@ export default function LiveTrackingModal({ shipment, onClose, onAdvanceStatus, 
                 Mark Dispatched
               </button>
             )}
-            {shipment.status === 'Dispatched' && (
+            {isAdmin && shipment.status === 'Dispatched' && (
               <button 
                 className="btn-primary"
                 onClick={() => onAdvanceStatus(shipment.id, 'In-Transit', 'Highway 101 Northbound', 'En route to destination')}

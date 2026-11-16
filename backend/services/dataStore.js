@@ -228,10 +228,30 @@ const getShipmentByTracking = async (trackingNumber) => {
   return memoryShipments.find(s => s.trackingNumber.toLowerCase() === trackingNumber.toLowerCase());
 };
 
+// Calculate dynamic delivery fee based on distance and cargo weight
+const calculateDeliveryFee = (distanceKm = 15, weightKg = 100) => {
+  const BASE_FEE = 5.00;      // Base dispatch handling fee ($5.00)
+  const RATE_PER_KM = 0.50;   // Distance rate ($0.50 per km)
+  const RATE_PER_KG = 0.05;   // Cargo weight handling rate ($0.05 per kg)
+  
+  const dist = Math.max(1, Number(distanceKm) || 15);
+  const weight = Math.max(1, Number(weightKg) || 10);
+  
+  const fee = BASE_FEE + (dist * RATE_PER_KM) + (weight * RATE_PER_KG);
+  return Number(fee.toFixed(2));
+};
+
 const createShipment = async (data) => {
   const randomTracking = `AGRI-TRK-${Math.floor(1000 + Math.random() * 9000)}`;
   const randomOrderId = `ORD-2026-${Math.floor(1000 + Math.random() * 9000)}`;
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+  const weightKg = Number(data.weightKg) || 100;
+  const pricePerKg = Number(data.pricePerKg) || 2.50;
+  const distanceKm = Number(data.distanceKm) || 15;
+  const productCost = Number((weightKg * pricePerKg).toFixed(2));
+  const deliveryFee = data.deliveryFee !== undefined ? Number(data.deliveryFee) : calculateDeliveryFee(distanceKm, weightKg);
+  const totalPrice = Number((productCost + deliveryFee).toFixed(2));
 
   const newShipment = {
     id: `shp_${Date.now()}`,
@@ -239,9 +259,12 @@ const createShipment = async (data) => {
     orderId: data.orderId || randomOrderId,
     productName: data.productName,
     category: data.category || 'Fresh Vegetables',
-    weightKg: Number(data.weightKg) || 100,
-    pricePerKg: Number(data.pricePerKg) || 2.50,
-    totalPrice: (Number(data.weightKg) || 100) * (Number(data.pricePerKg) || 2.50),
+    weightKg,
+    pricePerKg,
+    productCost,
+    distanceKm,
+    deliveryFee,
+    totalPrice,
     origin: data.origin || 'Regional Green Central Depot',
     destination: data.destination,
     buyerName: data.buyerName,
@@ -540,6 +563,7 @@ module.exports = {
   getShipments,
   getShipmentByTracking,
   createShipment,
+  calculateDeliveryFee,
   assignDriverToShipment,
   autoAssignOptimalDriver,
   updateShipmentStatus,

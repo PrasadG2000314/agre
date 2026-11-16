@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDrivers, createDriver, updateDriver } = require('../services/dataStore');
+const { requireAdmin } = require('../middleware/auth');
 
 // List drivers
 router.get('/', async (req, res) => {
@@ -13,8 +14,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Register new driver / logistics partner
-router.post('/', async (req, res) => {
+// Register new driver / logistics partner (Admin Only)
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const { name, email, phone, vehicleNumber, vehicleType, capacityKg, currentLocation } = req.body;
     if (!name || !phone || !vehicleNumber) {
@@ -38,8 +39,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update driver status or location
-router.put('/:id', async (req, res) => {
+// Update driver status or location (Admin Only)
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const updated = await updateDriver(id, req.body);

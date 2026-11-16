@@ -20,6 +20,7 @@ const STATUS_FILTERS = ['All', 'Pending', 'Dispatched', 'In-Transit', 'Delivered
 export default function ShipmentManagementTab({ 
   shipments, 
   drivers, 
+  isAdmin,
   onReloadShipments, 
   onOpenTracking, 
   onOpenProofOfDelivery,
@@ -34,6 +35,7 @@ export default function ShipmentManagementTab({
   const [category, setCategory] = useState('Fresh Vegetables');
   const [weightKg, setWeightKg] = useState(250);
   const [pricePerKg, setPricePerKg] = useState(2.80);
+  const [distanceKm, setDistanceKm] = useState(20);
   const [origin, setOrigin] = useState('Evergreen Highland Farms, Gate 3');
   const [destination, setDestination] = useState('Metro Fresh Supermarket, Bay Street');
   const [buyerName, setBuyerName] = useState('Sarah Jenkins');
@@ -71,6 +73,7 @@ export default function ShipmentManagementTab({
         category,
         weightKg: Number(weightKg),
         pricePerKg: Number(pricePerKg),
+        distanceKm: Number(distanceKm),
         origin,
         destination,
         buyerName,
@@ -130,14 +133,21 @@ export default function ShipmentManagementTab({
             </p>
           </div>
 
-          <button 
-            className="btn-primary" 
-            onClick={() => setShowCreateModal(true)}
-            id="btn-create-shipment"
-          >
-            <Plus size={16} />
-            <span>Create New Shipment</span>
-          </button>
+          {isAdmin ? (
+            <button 
+              className="btn-primary" 
+              onClick={() => setShowCreateModal(true)}
+              id="btn-create-shipment"
+            >
+              <Plus size={16} />
+              <span>Create New Shipment</span>
+            </button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#f8fafc', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#64748b' }}>
+              <span>🔒</span>
+              <span>Admin approval required to create shipments</span>
+            </div>
+          )}
         </div>
 
         {/* Filters Bar */}
@@ -212,7 +222,7 @@ export default function ShipmentManagementTab({
                     <td>
                       <div style={{ fontWeight: '700', color: '#0f172a' }}>{s.productName}</div>
                       <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                        {s.weightKg} kg • {s.category}
+                        {s.weightKg} kg • {s.distanceKm || 15} km • {s.category}
                       </div>
                     </td>
 
@@ -220,16 +230,17 @@ export default function ShipmentManagementTab({
                       <div style={{ fontWeight: '700', color: '#059669' }}>
                         ${s.totalPrice.toFixed(2)}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                        ${s.pricePerKg.toFixed(2)} / 1 kg
+                      <div style={{ fontSize: '0.73rem', color: '#64748b' }}>
+                        Cargo: ${(s.productCost !== undefined ? s.productCost : (s.weightKg * s.pricePerKg)).toFixed(2)} | Delivery: ${(s.deliveryFee !== undefined ? s.deliveryFee : 0).toFixed(2)}
                       </div>
                     </td>
 
-                    <td style={{ maxWidth: '240px' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <span style={{ color: '#0f172a', fontWeight: '600' }}>To:</span> {s.destination}
+                    <td style={{ minWidth: '180px', maxWidth: '280px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#1e293b', lineHeight: '1.35', marginBottom: '0.2rem' }}>
+                        <span style={{ color: '#064e3b', fontWeight: '700', marginRight: '0.35rem' }}>To:</span>
+                        <span>{s.destination}</span>
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                         Buyer: {s.buyerName}
                       </div>
                     </td>
@@ -240,7 +251,7 @@ export default function ShipmentManagementTab({
                           <strong style={{ fontSize: '0.85rem', color: '#0f172a' }}>{s.driverName}</strong>
                           <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{s.vehicleNumber}</div>
                         </div>
-                      ) : (
+                      ) : isAdmin ? (
                         <button
                           className="btn-secondary"
                           style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', color: '#b45309', background: '#fef3c7', borderColor: '#fde68a' }}
@@ -251,6 +262,10 @@ export default function ShipmentManagementTab({
                         >
                           + Assign Driver
                         </button>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#b45309', background: '#fef3c7', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: '600' }}>
+                          Awaiting Admin
+                        </span>
                       )}
                     </td>
 
@@ -268,7 +283,7 @@ export default function ShipmentManagementTab({
                     </td>
 
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', alignItems: 'center' }}>
                         <button 
                           className="btn-secondary"
                           style={{ padding: '0.4rem 0.65rem', fontSize: '0.78rem' }}
@@ -278,7 +293,7 @@ export default function ShipmentManagementTab({
                           Track
                         </button>
 
-                        {s.status !== 'Delivered' && (
+                        {isAdmin && s.status !== 'Delivered' && (
                           <button 
                             className="btn-primary"
                             style={{ padding: '0.4rem 0.65rem', fontSize: '0.78rem' }}
@@ -357,6 +372,44 @@ export default function ShipmentManagementTab({
                 </div>
 
                 <div className="form-group">
+                  <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Estimated Distance (km):</span>
+                    <strong style={{ color: '#065f46' }}>{distanceKm} km</strong>
+                  </label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    max="1000"
+                    value={distanceKm}
+                    onChange={(e) => setDistanceKm(Math.max(1, Number(e.target.value)))}
+                    required
+                  />
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>
+                    Used for dynamic logistics routing and delivery fee calculation ($5.00 Base + $0.50/km + $0.05/kg)
+                  </div>
+                </div>
+
+                {/* Live Cost Estimation */}
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.75rem 0.85rem', marginBottom: '1rem', fontSize: '0.825rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569', marginBottom: '0.2rem' }}>
+                    <span>Cargo Produce Cost ({weightKg} kg @ ${pricePerKg}/kg):</span>
+                    <strong>${(Number(weightKg) * Number(pricePerKg)).toFixed(2)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569', marginBottom: '0.35rem' }}>
+                    <span>Logistics Delivery Fee ({distanceKm} km + {weightKg} kg):</span>
+                    <strong style={{ color: '#0284c7' }}>
+                      ${(5.00 + (Number(distanceKm) * 0.50) + (Number(weightKg) * 0.05)).toFixed(2)}
+                    </strong>
+                  </div>
+                  <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '0.35rem', display: 'flex', justifyContent: 'space-between', fontWeight: '700', color: '#064e3b' }}>
+                    <span>Total Shipment Value:</span>
+                    <span style={{ color: '#059669', fontSize: '0.95rem' }}>
+                      ${((Number(weightKg) * Number(pricePerKg)) + 5.00 + (Number(distanceKm) * 0.50) + (Number(weightKg) * 0.05)).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="form-group">
                   <label>Origin Farm / Warehouse Gate:</label>
                   <input 
                     type="text" 
@@ -415,7 +468,7 @@ export default function ShipmentManagementTab({
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary" disabled={creating}>
-                  {creating ? 'Dispatching...' : `Create Shipment ($${(Number(weightKg) * Number(pricePerKg)).toFixed(2)})`}
+                  {creating ? 'Dispatching...' : `Create Shipment ($${((Number(weightKg) * Number(pricePerKg)) + 5.00 + (Number(distanceKm) * 0.50) + (Number(weightKg) * 0.05)).toFixed(2)})`}
                 </button>
               </div>
             </form>

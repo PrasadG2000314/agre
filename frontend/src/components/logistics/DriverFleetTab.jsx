@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Truck, Plus, MapPin, Star, CheckCircle, Clock, ShieldCheck, X } from 'lucide-react';
 import { api } from '../../services/api';
 
-export default function DriverFleetTab({ drivers, onReloadDrivers }) {
+export default function DriverFleetTab({ drivers, isAdmin, onReloadDrivers }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -62,10 +62,17 @@ export default function DriverFleetTab({ drivers, onReloadDrivers }) {
             </p>
           </div>
 
-          <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-            <Plus size={16} />
-            <span>Register Vehicle & Driver</span>
-          </button>
+          {isAdmin ? (
+            <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+              <Plus size={16} />
+              <span>Register Vehicle & Driver</span>
+            </button>
+          ) : (
+            <div style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#f8fafc', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <span>🔒</span>
+              <span>Fleet management restricted to Admin</span>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem', padding: '1.5rem' }}>
@@ -89,22 +96,39 @@ export default function DriverFleetTab({ drivers, onReloadDrivers }) {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleToggleStatus(d)}
-                  style={{
-                    padding: '0.25rem 0.65rem',
-                    borderRadius: '999px',
-                    fontSize: '0.75rem',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    background: d.status === 'Available' ? '#ecfdf5' : d.status === 'On Delivery' ? '#f0f9ff' : '#f1f5f9',
-                    color: d.status === 'Available' ? '#047857' : d.status === 'On Delivery' ? '#0369a1' : '#64748b',
-                    border: '1px solid currentColor'
-                  }}
-                  title="Click to toggle Available / Off Duty"
-                >
-                  {d.status}
-                </button>
+                {isAdmin ? (
+                  <button
+                    onClick={() => handleToggleStatus(d)}
+                    style={{
+                      padding: '0.25rem 0.65rem',
+                      borderRadius: '999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      background: d.status === 'Available' ? '#ecfdf5' : d.status === 'On Delivery' ? '#f0f9ff' : '#f1f5f9',
+                      color: d.status === 'Available' ? '#047857' : d.status === 'On Delivery' ? '#0369a1' : '#64748b',
+                      border: '1px solid currentColor'
+                    }}
+                    title="Click to toggle Available / Off Duty"
+                  >
+                    {d.status}
+                  </button>
+                ) : (
+                  <span
+                    style={{
+                      padding: '0.25rem 0.65rem',
+                      borderRadius: '999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '700',
+                      background: d.status === 'Available' ? '#ecfdf5' : d.status === 'On Delivery' ? '#f0f9ff' : '#f1f5f9',
+                      color: d.status === 'Available' ? '#047857' : d.status === 'On Delivery' ? '#0369a1' : '#64748b',
+                      border: '1px solid currentColor'
+                    }}
+                    title="Status managed by Administrator"
+                  >
+                    {d.status}
+                  </span>
+                )}
               </div>
 
               <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', fontSize: '0.825rem', marginBottom: '0.75rem' }}>

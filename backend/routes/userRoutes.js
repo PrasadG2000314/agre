@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { getUsers, createUser, updateUser, deleteUser } = require('../services/dataStore');
+const { requireAdmin } = require('../middleware/auth');
 
 // List all users with filtering
 router.get('/', async (req, res) => {
@@ -19,8 +20,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create user
-router.post('/', async (req, res) => {
+// Create user (Admin Only)
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const { name, email, password, role, phone, location, status } = req.body;
     if (!name || !email) {
@@ -53,8 +54,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update user profile or role/status
-router.put('/:id', async (req, res) => {
+// Update user profile or role/status (Admin Only)
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = { ...req.body };
@@ -74,8 +75,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete user
-router.delete('/:id', async (req, res) => {
+// Delete user (Admin Only)
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     await deleteUser(id);

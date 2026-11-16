@@ -17,6 +17,7 @@ export default function OverviewTab({
   kpis, 
   shipments, 
   drivers, 
+  isAdmin,
   onRunAutoDispatch, 
   onOpenCreateShipment, 
   onSelectShipment 
@@ -98,24 +99,35 @@ export default function OverviewTab({
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button 
-            className="btn-primary" 
-            style={{ background: '#10b981', color: '#064e3b', fontWeight: '800', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
-            onClick={onRunAutoDispatch}
-          >
-            <Zap size={17} />
-            <span>Run Auto-Dispatch ({pendingShipments.length} pending)</span>
-          </button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          {isAdmin ? (
+            <>
+              <button 
+                className="btn-primary" 
+                style={{ background: '#10b981', color: '#064e3b', fontWeight: '800', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
+                onClick={onRunAutoDispatch}
+              >
+                <Zap size={17} />
+                <span>Run Auto-Dispatch ({pendingShipments.length} pending)</span>
+              </button>
 
-          <button 
-            className="btn-secondary" 
-            style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.3)' }}
-            onClick={onOpenCreateShipment}
-          >
-            <PlusCircle size={17} />
-            <span>Create Shipment</span>
-          </button>
+              <button 
+                className="btn-secondary" 
+                style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.3)' }}
+                onClick={onOpenCreateShipment}
+              >
+                <PlusCircle size={17} />
+                <span>Create Shipment</span>
+              </button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(0, 0, 0, 0.25)', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.15)', fontSize: '0.85rem' }}>
+              <span>🔒</span>
+              <span style={{ color: '#fef08a' }}>
+                Auto-dispatch & shipment creation restricted to <strong>Admin</strong>.
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

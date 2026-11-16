@@ -4,11 +4,13 @@ const {
   getShipments,
   getShipmentByTracking,
   createShipment,
+  calculateDeliveryFee,
   assignDriverToShipment,
   autoAssignOptimalDriver,
   updateShipmentStatus,
   confirmProofOfDelivery
 } = require('../services/dataStore');
+const { requireAdmin } = require('../middleware/auth');
 
 // List shipments with optional filters (status, isDelayed, search)
 router.get('/', async (req, res) => {
@@ -35,8 +37,40 @@ router.get('/track/:trackingNumber', async (req, res) => {
   }
 });
 
-// Create new shipment for an agricultural order
-router.post('/', async (req, res) => {
+// Calculate dynamic delivery fee quote based on distance and weight
+router.post('/calculate-quote', (req, res) => {
+  try {
+    const { distanceKm, weightKg, pricePerKg } = req.body;
+    const dist = Math.max(1, Number(distanceKm) || 15);
+    const weight = Math.max(1, Number(weightKg) || 10);
+    const price = Math.max(0, Number(pricePerKg) || 0);
+
+    const productCost = Number((weight * price).toFixed(2));
+    const deliveryFee = calculateDeliveryFee(dist, weight);
+    const totalPrice = Number((productCost + deliveryFee).toFixed(2));
+
+    res.json({
+      success: true,
+      breakdown: {
+        distanceKm: dist,
+        weightKg: weight,
+        baseFee: 5.00,
+        ratePerKm: 0.50,
+        ratePerKg: 0.05,
+        distanceFee: Number((dist * 0.50).toFixed(2)),
+        weightFee: Number((weight * 0.05).toFixed(2)),
+        deliveryFee,
+        productCost,
+        totalPrice
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Create new shipment for an agricultural order (Admin Approval Required)
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const { productName, category, weightKg, pricePerKg, origin, destination, buyerName, buyerPhone, driverId } = req.body;
     if (!productName || !destination || !buyerName) {
@@ -50,8 +84,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Manual driver assignment based on location/fleet availability
-router.post('/:id/assign-driver', async (req, res) => {
+// Manual driver assignment based on location/fleet availability (Admin Approval Required)
+router.post('/:id/assign-driver', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { driverId } = req.body;
@@ -71,8 +105,8 @@ router.post('/:id/assign-driver', async (req, res) => {
   }
 });
 
-// Intelligent Auto-Assignment (Location Proximity & Capacity Algorithm)
-router.post('/:id/auto-dispatch', async (req, res) => {
+// Intelligent Auto-Assignment (Location Proximity & Capacity Algorithm - Admin Approval Required)
+router.post('/:id/auto-dispatch', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await autoAssignOptimalDriver(id);
@@ -87,8 +121,8 @@ router.post('/:id/auto-dispatch', async (req, res) => {
   }
 });
 
-// Update shipment status (Pending -> Dispatched -> In-Transit -> Delivered)
-router.post('/:id/update-status', async (req, res) => {
+// Update shipment status (Pending -> Dispatched -> In-Transit -> Delivered - Admin Approval Required)
+router.post('/:id/update-status', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, location, note, isDelayed, delayReason } = req.body;
@@ -103,8 +137,8 @@ router.post('/:id/update-status', async (req, res) => {
   }
 });
 
-// Proof of Delivery Confirmation (OTP verification, digital signature, photo)
-router.post('/:id/proof-of-delivery', async (req, res) => {
+// Proof of Delivery Confirmation (Admin Approval / Verification Required)
+router.post('/:id/proof-of-delivery', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { otp, recipientName, signatureData, photoUrl, confirmedBy } = req.body;

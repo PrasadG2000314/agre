@@ -136,6 +136,15 @@ export const api = {
     return res.json();
   },
 
+  async calculateQuote(distanceKm, weightKg, pricePerKg) {
+    const res = await fetch(`${API_BASE_URL}/shipments/calculate-quote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ distanceKm, weightKg, pricePerKg })
+    });
+    return res.json();
+  },
+
   async createShipment(shipmentData) {
     const res = await fetch(`${API_BASE_URL}/shipments`, {
       method: 'POST',

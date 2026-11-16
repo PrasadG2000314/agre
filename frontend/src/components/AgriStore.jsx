@@ -33,6 +33,7 @@ export default function AgriStore({ onNavigateToLogistics, onShipmentCreated }) 
   
   // Order Form State
   const [orderQty, setOrderQty] = useState(50);
+  const [distanceKm, setDistanceKm] = useState(15);
   const [buyerName, setBuyerName] = useState('Metro Fresh Supermarket');
   const [buyerPhone, setBuyerPhone] = useState('+1 (555) 789-0123');
   const [destination, setDestination] = useState('Bay Street Fresh Terminal Dock 4');
@@ -60,6 +61,7 @@ export default function AgriStore({ onNavigateToLogistics, onShipmentCreated }) 
   const handleOpenOrder = (prod) => {
     setOrderModalProduct(prod);
     setOrderQty(prod.stockKg > 100 ? 100 : 25);
+    setDistanceKm(15);
     setOrderSuccessData(null);
   };
 
@@ -74,6 +76,7 @@ export default function AgriStore({ onNavigateToLogistics, onShipmentCreated }) 
         category: orderModalProduct.category,
         quantityKg: orderQty,
         pricePerKg: orderModalProduct.pricePerKg,
+        distanceKm,
         buyerName,
         buyerPhone,
         destination
@@ -259,14 +262,22 @@ export default function AgriStore({ onNavigateToLogistics, onShipmentCreated }) 
                     <strong style={{ color: '#065f46' }}>{orderSuccessData.trackingNumber}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Cargo Quantity:</span>
-                    <strong>{orderSuccessData.weightKg} kg</strong>
+                    <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Cargo Quantity & Distance:</span>
+                    <strong>{orderSuccessData.weightKg} kg • {orderSuccessData.distanceKm || distanceKm} km</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Total Cost:</span>
-                    <strong style={{ color: '#059669', fontSize: '1.1rem' }}>${orderSuccessData.totalPrice.toFixed(2)}</strong>
+                    <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Produce Cost:</span>
+                    <span>${(orderSuccessData.productCost || (orderSuccessData.weightKg * orderSuccessData.pricePerKg)).toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Delivery Fee (Distance + Weight):</span>
+                    <span style={{ color: '#0284c7', fontWeight: '600' }}>+${(orderSuccessData.deliveryFee || 0).toFixed(2)}</span>
+                  </div>
+                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#0f172a', fontWeight: '700', fontSize: '0.9rem' }}>Total Cost:</span>
+                    <strong style={{ color: '#059669', fontSize: '1.2rem' }}>${orderSuccessData.totalPrice.toFixed(2)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', paddingTop: '0.5rem', borderTop: '1px dashed #cbd5e1' }}>
                     <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Delivery Security OTP:</span>
                     <span style={{ background: '#dcfce7', color: '#166534', padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: '800' }}>
                       {orderSuccessData.otpCode}
@@ -324,8 +335,62 @@ export default function AgriStore({ onNavigateToLogistics, onShipmentCreated }) 
                     />
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem', fontSize: '0.8rem', color: '#64748b' }}>
                       <span>Max available: {orderModalProduct.stockKg} kg</span>
-                      <strong style={{ color: '#064e3b' }}>
-                        Total: ${(orderQty * orderModalProduct.pricePerKg).toFixed(2)}
+                      <span style={{ color: '#475569' }}>
+                        Produce subtotal: ${(orderQty * orderModalProduct.pricePerKg).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>Estimated Delivery Distance (km):</span>
+                      <strong style={{ color: '#065f46', fontSize: '0.95rem' }}>{distanceKm} km</strong>
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="200" 
+                        value={distanceKm}
+                        onChange={(e) => setDistanceKm(Math.max(1, Number(e.target.value)))}
+                        style={{ flex: 1, accentColor: '#059669' }}
+                      />
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="500" 
+                        value={distanceKm}
+                        onChange={(e) => setDistanceKm(Math.max(1, Number(e.target.value)))}
+                        style={{ width: '85px', textAlign: 'center', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                      />
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
+                      Distance between farm origin hub & your delivery destination
+                    </div>
+                  </div>
+
+                  {/* Dynamic Price Breakdown Box */}
+                  <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '0.9rem', marginBottom: '1.25rem' }}>
+                    <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#166534', marginBottom: '0.4rem' }}>
+                      💰 Transparent Price & Delivery Fee Breakdown
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.825rem', marginBottom: '0.25rem', color: '#334155' }}>
+                      <span>Produce Cost ({orderQty} kg × ${orderModalProduct.pricePerKg.toFixed(2)}):</span>
+                      <strong>${(orderQty * orderModalProduct.pricePerKg).toFixed(2)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.825rem', marginBottom: '0.15rem', color: '#334155' }}>
+                      <span>Delivery Fee ({distanceKm} km + {orderQty} kg):</span>
+                      <strong style={{ color: '#0284c7' }}>
+                        ${(5.00 + (distanceKm * 0.50) + (orderQty * 0.05)).toFixed(2)}
+                      </strong>
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: '0.5rem', background: '#e2e8f030', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
+                      Rate: Base $5.00 + Distance ($0.50/km = ${(distanceKm * 0.50).toFixed(2)}) + Weight ($0.05/kg = ${(orderQty * 0.05).toFixed(2)})
+                    </div>
+                    <div style={{ borderTop: '1px dashed #86efac', paddingTop: '0.45rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <strong style={{ fontSize: '0.95rem', color: '#064e3b' }}>Total Payable Amount:</strong>
+                      <strong style={{ fontSize: '1.2rem', color: '#059669' }}>
+                        ${((orderQty * orderModalProduct.pricePerKg) + 5.00 + (distanceKm * 0.50) + (orderQty * 0.05)).toFixed(2)}
                       </strong>
                     </div>
                   </div>
@@ -374,7 +439,7 @@ export default function AgriStore({ onNavigateToLogistics, onShipmentCreated }) 
                     className="btn-primary" 
                     disabled={orderSubmitting}
                   >
-                    {orderSubmitting ? 'Creating Shipment...' : `Confirm Order ($${(orderQty * orderModalProduct.pricePerKg).toFixed(2)})`}
+                    {orderSubmitting ? 'Creating Shipment...' : `Confirm Order & Delivery ($${((orderQty * orderModalProduct.pricePerKg) + 5.00 + (distanceKm * 0.50) + (orderQty * 0.05)).toFixed(2)})`}
                   </button>
                 </div>
               </form>

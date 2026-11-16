@@ -17,19 +17,26 @@ router.get('/export-csv', async (req, res) => {
   try {
     const reportData = await getDeliveryReports();
     const rows = [
-      ['Tracking Number', 'Order ID', 'Product', 'Category', 'Weight (kg)', 'Total Price ($)', 'Driver', 'Vehicle', 'Status', 'Delayed', 'Estimated Delivery', 'Delivered At']
+      ['Tracking Number', 'Order ID', 'Product', 'Category', 'Weight (kg)', 'Distance (km)', 'Product Cost ($)', 'Delivery Fee ($)', 'Total Price ($)', 'Driver', 'Vehicle', 'Status', 'Delayed', 'Estimated Delivery', 'Delivered At']
     ];
 
     const all = [...reportData.completedList, ...reportData.delayedList];
     const unique = Array.from(new Map(all.map(item => [item.trackingNumber, item])).values());
 
     unique.forEach(s => {
+      const prodCost = s.productCost !== undefined ? s.productCost : (s.weightKg * s.pricePerKg);
+      const delivFee = s.deliveryFee !== undefined ? s.deliveryFee : 0;
+      const dist = s.distanceKm || 15;
+
       rows.push([
         s.trackingNumber,
         s.orderId,
         `"${s.productName}"`,
         s.category,
         s.weightKg,
+        dist,
+        prodCost.toFixed(2),
+        delivFee.toFixed(2),
         s.totalPrice.toFixed(2),
         s.driverName || 'Unassigned',
         s.vehicleNumber || 'N/A',
